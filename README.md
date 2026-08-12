@@ -404,11 +404,11 @@ Wheel 文件包含可执行 native code。
 
 ## Credits
 
-感谢：
+感谢以下项目及其贡献者：
 
-- THU-ML / SageAttention contributors
-- SageAttention gfx12 native backend contributors
-- AMD ROCm / TheRock contributors
+- [THU-ML / SageAttention](https://github.com/thu-ml/SageAttention)
+- [SageAttention gfx12 native backend contributors](https://github.com/thu-ml/SageAttention/pull/368)
+- [AMD ROCm / TheRock](https://github.com/ROCm/TheRock)
 - Community build contributors
 
 ---
