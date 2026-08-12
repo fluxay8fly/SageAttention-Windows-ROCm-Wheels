@@ -1,22 +1,22 @@
 # Contributing
 
-感谢你为 SageAttention Windows ROCm Wheels 提交社区构建。
+感谢你为 SageAttention Windows ROCm Wheels 提交社区构建、测试结果或文档改进。
 
-本仓库欢迎社区贡献不同：
+本仓库欢迎以下类型的贡献：
 
-- GPU architecture
-- Python version
-- PyTorch version
-- ROCm version
-- SageAttention version
-
-组合下的 Windows ROCm SageAttention wheels。
+- 新的 Windows ROCm SageAttention wheel
+- 不同 GPU architecture 的构建
+- 不同 Python / PyTorch / ROCm 版本组合
+- 已有 wheel 的实机验证结果
+- 构建文档修正
+- 安装和兼容性说明修正
+- 已知问题报告
 
 ---
 
-## Supported Contributions
+## Supported Build Variants
 
-欢迎提交例如：
+欢迎提交不同 GPU architecture 的构建，例如：
 
 ```text
 gfx1100
@@ -26,34 +26,20 @@ gfx1200
 gfx1201
 ```
 
-以及不同：
+以及不同的软件环境：
 
 ```text
 Python 3.11
 Python 3.12
 Python 3.13
-PyTorch ROCm versions
-ROCm versions
-SageAttention versions
+Different PyTorch ROCm versions
+Different ROCm versions
+Different SageAttention versions
 ```
 
 ---
 
-## Contribution Types
-
-目前接受：
-
-1. 新的预编译 wheel
-2. 已有 wheel 的实机验证结果
-3. 新 GPU architecture 支持
-4. 新 PyTorch / ROCm 版本构建
-5. BUILDING 文档修正
-6. 安装和兼容性说明修正
-7. 已知问题报告
-
----
-
-# Wheel Submission Requirements
+## Wheel Submission Requirements
 
 提交新的 wheel 时必须提供完整构建信息。
 
@@ -78,7 +64,7 @@ SHA256:
 
 ```text
 SageAttention version: 2.2.0
-Source repository: thu-ml/SageAttention / gfx12 branch
+Source repository: thu-ml/SageAttention
 Source commit: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Python version: 3.12.10
 PyTorch version: 2.9.1+rocm7.2.1
@@ -93,11 +79,11 @@ SHA256: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ---
 
-# Required Tests
+## Required Tests
 
 提交 wheel 前至少完成以下测试。
 
-## Python
+### Python
 
 ```bash
 python --version
@@ -105,7 +91,7 @@ python --version
 
 ---
 
-## PyTorch / ROCm
+### PyTorch / ROCm
 
 ```bash
 python -c "import torch; print(torch.__version__); print(torch.version.hip)"
@@ -115,7 +101,7 @@ python -c "import torch; print(torch.__version__); print(torch.version.hip)"
 
 ---
 
-## SageAttention Import
+### SageAttention Import
 
 ```bash
 python -c "import sageattention; print(sageattention.__file__)"
@@ -123,7 +109,7 @@ python -c "import sageattention; print(sageattention.__file__)"
 
 ---
 
-## Native Extension
+### Native Extension
 
 如果 wheel 包含 gfx12 native backend：
 
@@ -133,7 +119,7 @@ python -c "import torch; import sageattention._qattn_gfx12_native as m; print('G
 
 ---
 
-## Native Backend Status
+### Native Backend Status
 
 如果适用：
 
@@ -149,9 +135,9 @@ GFX12_NATIVE_ENABLED = True
 
 ---
 
-# Hardware Validation
+## Hardware Validation
 
-如果实际在 GPU 上运行过，请提供：
+如果已经在实际 GPU workload 中运行过，请提供：
 
 ```text
 Tested GPU:
@@ -162,7 +148,7 @@ Result:
 Known issues:
 ```
 
-例如：
+示例：
 
 ```text
 Tested GPU: AMD Radeon RX 9070
@@ -175,9 +161,9 @@ Known issues: None observed
 
 ---
 
-# Build Status
+## Build Status
 
-提交的 wheel 会按照验证程度标记状态。
+提交的 wheel 会根据验证程度标记状态。
 
 | Status | Meaning |
 |---|---|
@@ -191,29 +177,7 @@ Known issues: None observed
 
 ---
 
-# SHA256
-
-所有 binary wheel 必须提供 SHA256。
-
-PowerShell：
-
-```powershell
-Get-FileHash .\sageattention-xxx.whl -Algorithm SHA256
-```
-
-示例：
-
-```text
-Algorithm : SHA256
-Hash      : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-Path      : sageattention-xxx.whl
-```
-
-提交时请提供完整 64-character SHA256。
-
----
-
-# Source Commit
+## Source Commit
 
 必须提供构建 wheel 所使用的准确 source commit。
 
@@ -232,7 +196,7 @@ master
 gfx12 branch
 ```
 
-因为这些引用未来可能发生变化。
+因为这些引用未来可能变化。
 
 准确 commit SHA 有助于：
 
@@ -243,9 +207,9 @@ gfx12 branch
 
 ---
 
-# Wheel Naming
+## Wheel Naming
 
-推荐在文件或 Release Asset 名称中体现关键兼容信息。
+推荐在 wheel 文件名或 Release Asset 名称中体现关键兼容信息。
 
 例如：
 
@@ -253,7 +217,7 @@ gfx12 branch
 sageattention-2.2.0+gfx1201.rocm721.torch291-cp312-cp312-win_amd64.whl
 ```
 
-至少应该能够明确判断：
+建议能够明确判断：
 
 ```text
 SageAttention version
@@ -268,47 +232,79 @@ Windows architecture
 > Python wheel 标准 tag，例如：
 >
 > ```text
-> sageattention-2.2.0+gfx1201.rocm721.torch291-cp312-cp312-win_amd64.whl
+> cp312-cp312-win_amd64
 > ```
 >
 > 并不会表示 PyTorch、ROCm 或 GPU architecture 兼容性。
 >
-> 因此发布说明中仍然必须单独标注这些信息。
+> 因此 Release 信息中仍然必须单独标注这些环境信息。
 
 ---
 
-# Binary Distribution
+## SHA256
+
+所有 binary wheel 必须提供 SHA256。
+
+PowerShell：
+
+```powershell
+Get-FileHash .\sageattention-xxx.whl -Algorithm SHA256
+```
+
+示例：
+
+```text
+Algorithm : SHA256
+Hash      : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Path      : sageattention-xxx.whl
+```
+
+提交时请提供完整的 64-character SHA256。
+
+---
+
+## Binary Distribution
 
 大型 `.whl` 文件不建议直接提交到 Git repository history。
 
-推荐：
+推荐流程：
 
 ```text
-Source repository
-    README.md
-    BUILDING.md
-    CONTRIBUTING.md
-    LICENSE
-
-GitHub Releases
-    .whl
-    SHA256
-    build information
+Contributor
+    ↓
+Issue / Pull Request
+    ↓
+Provide build information
+    ↓
+Provide test results
+    ↓
+Provide SHA256
+    ↓
+Review
+    ↓
+GitHub Release
 ```
 
-社区贡献者可以先通过 Issue / Pull Request 提供：
+Repository 本身主要保存：
 
-- 构建信息
-- 测试输出
-- SHA256
-- source commit
-- wheel 信息
+```text
+README.md
+BUILDING.md
+CONTRIBUTING.md
+LICENSE
+Compatibility information
+Build documentation
+```
 
-审核完成后再加入对应 GitHub Release。
+预编译 binary 建议放在：
+
+```text
+GitHub Releases
+```
 
 ---
 
-# Do Not Submit Standalone `.pyd` Files
+## Do Not Submit Standalone `.pyd` Files
 
 不推荐仅提交：
 
@@ -324,7 +320,7 @@ _qattn_gfx12_native.cp312-win_amd64.pyd
 - 缺少 package metadata
 - pip 无法正确管理
 - Python code 与 native binary 可能不是同一个 commit
-- 容易出现 ABI mismatch
+- 更容易出现 ABI mismatch
 - 无法清楚表达 PyTorch / ROCm compatibility
 
 正式发布优先使用：
@@ -335,7 +331,7 @@ _qattn_gfx12_native.cp312-win_amd64.pyd
 
 ---
 
-# Binary Compatibility
+## Binary Compatibility
 
 Native extension 与以下环境存在二进制兼容关系：
 
@@ -348,7 +344,7 @@ Windows architecture
 Compiler / runtime
 ```
 
-请不要声称一个 wheel：
+请不要声称某个 wheel：
 
 ```text
 works on all AMD GPUs
@@ -356,7 +352,7 @@ works on all ROCm versions
 works on all PyTorch versions
 ```
 
-除非已经完成相应验证。
+除非已经完成对应验证。
 
 建议只声明：
 
@@ -364,7 +360,7 @@ works on all PyTorch versions
 Built against
 ```
 
-和：
+以及：
 
 ```text
 Tested on
@@ -374,23 +370,23 @@ Tested on
 
 ---
 
-# Security Requirements
+## Security Requirements
 
-Wheel 是可以执行 native code 的二进制文件。
+Wheel 属于可执行 native binary。
 
 因此：
 
 - 不接受来源无法说明的 wheel
 - 不接受 source commit 无法确认的构建
 - 不接受缺少 SHA256 的 binary
-- 不接受经过未知修改但未说明来源的 binary
-- 不接受声称来自第三方但无法确认 source 的 binary
+- 不接受来源不明或经过未知修改的 binary
+- 不接受无法提供基本测试结果的 binary submission
 
-仓库维护者可能拒绝任何无法合理验证来源的 binary submission。
+仓库维护者可以拒绝任何无法合理确认来源或兼容性的提交。
 
 ---
 
-# Licensing
+## Licensing
 
 提交者必须确认：
 
@@ -403,9 +399,39 @@ Wheel 是可以执行 native code 的二进制文件。
 
 ---
 
-# Submission Template
+## Submission Method
 
-提交新的 wheel 时可以直接复制以下模板：
+### Wheel Submission
+
+对于新的预编译 wheel，推荐：
+
+1. 创建 Issue
+2. 提供完整构建环境
+3. 提供测试输出
+4. 提供 source commit
+5. 提供 SHA256
+6. 提供 wheel 文件或可供维护者审核的 binary
+7. 审核后加入对应 GitHub Release
+
+### Pull Requests
+
+Pull Request 更适合：
+
+- README 修改
+- BUILDING.md 修改
+- CONTRIBUTING.md 修改
+- Compatibility table 更新
+- 构建脚本
+- CI / automation
+- 文档修正
+
+不建议通过普通 PR 直接提交大型 `.whl` binary。
+
+---
+
+## Submission Template
+
+提交新的 wheel 时可以复制以下模板：
 
 ```markdown
 ## Wheel Information
@@ -491,21 +517,7 @@ Add any additional information here.
 
 ---
 
-# Pull Requests
-
-对于文档、构建脚本和 compatibility table 修改，欢迎直接提交 Pull Request。
-
-请尽量：
-
-- 一次 PR 只处理一个明确主题
-- 描述修改原因
-- 提供相关测试信息
-- 避免无关格式化修改
-- 不删除其他 community build 的验证信息
-
----
-
-# Corrections
+## Corrections and Bug Reports
 
 如果发现某个 wheel：
 
@@ -532,14 +544,21 @@ Wheel filename
 
 ---
 
-# Code of Conduct
+## Documentation Contributions
 
-请保持技术讨论聚焦于：
+欢迎修改：
 
-- 构建
-- 兼容性
-- 性能
-- Bug
-- 文档
+- README
+- BUILDING
+- Compatibility information
+- Installation instructions
+- Troubleshooting
+- Community build information
 
-对于不同硬件和软件环境的结果，请优先提供可验证的日志和测试数据。
+提交文档 PR 时建议：
+
+- 一次 PR 只处理一个明确主题
+- 描述修改原因
+- 避免无关格式化修改
+- 不删除其他 community build 的验证信息
+- 对兼容性结论尽量提供测试依据
