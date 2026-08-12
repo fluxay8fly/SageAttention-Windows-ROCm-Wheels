@@ -19,13 +19,13 @@ Unofficial prebuilt SageAttention wheels for Windows + AMD ROCm.
 |---|---|---|---|---|---|---|
 | gfx1201 | Radeon RX 9070 | 3.12 | 2.9.1+rocm7.2.1 | 7.2.1 | 2.2.0 / gfx12 native backend | ✅ Maintainer Tested |
 
-状态说明：
+### Status
 
 | Status | Meaning |
 |---|---|
 | ✅ Maintainer Tested | 由仓库维护者在对应 GPU 上实机验证 |
 | ✅ Community Tested | 由社区提交者报告已在对应硬件验证 |
-| ⚠️ Build Only | 已成功构建，但未在对应硬件完成运行验证 |
+| ⚠️ Build Only | 已成功构建，但未完成对应硬件运行验证 |
 | ❌ Broken | 已知无法正常加载或运行 |
 
 ---
@@ -55,22 +55,17 @@ GFX12 native loaded: <module 'sageattention._qattn_gfx12_native' ...>
 GFX12_NATIVE_ENABLED = True
 ```
 
+---
+
 ## Installation
 
 安装前建议先确认当前 Python、PyTorch 和 ROCm 版本。
 
-普通 Python 环境：
+### Standard Python
 
 ```bash
 python --version
 python -c "import torch; print(torch.__version__); print(torch.version.hip)"
-```
-
-ComfyUI Portable：
-
-```bash
-python_embeded\python.exe --version
-python_embeded\python.exe -c "import torch; print(torch.__version__); print(torch.version.hip)"
 ```
 
 安装 wheel：
@@ -79,17 +74,29 @@ python_embeded\python.exe -c "import torch; print(torch.__version__); print(torc
 python -m pip install --force-reinstall --no-deps <wheel-file>.whl
 ```
 
-ComfyUI Portable：
+### ComfyUI Portable
 
-```bash
+确认环境：
+
+```bat
+python_embeded\python.exe --version
+python_embeded\python.exe -c "import torch; print(torch.__version__); print(torch.version.hip)"
+```
+
+安装 wheel：
+
+```bat
 python_embeded\python.exe -m pip install --force-reinstall --no-deps <wheel-file>.whl
 ```
+
+> [!IMPORTANT]
+> 推荐使用 `--no-deps`，避免 pip 在安装 wheel 时自动替换当前 PyTorch / ROCm 相关依赖。
 
 ---
 
 ## Verify Native Backend
 
-对于 gfx12 native build，可使用以下命令进行验证。
+对于 gfx12 native build，建议至少完成以下两项验证。
 
 ### Verify native extension
 
@@ -101,7 +108,7 @@ python -c "import torch; import sageattention._qattn_gfx12_native as m; print('G
 
 ComfyUI Portable：
 
-```bash
+```bat
 python_embeded\python.exe -c "import torch; import sageattention._qattn_gfx12_native as m; print('GFX12 native loaded:', m)"
 ```
 
@@ -115,7 +122,7 @@ python -c "from sageattention.core import GFX12_NATIVE_ENABLED; print('GFX12_NAT
 
 ComfyUI Portable：
 
-```bash
+```bat
 python_embeded\python.exe -c "from sageattention.core import GFX12_NATIVE_ENABLED; print('GFX12_NATIVE_ENABLED =', GFX12_NATIVE_ENABLED)"
 ```
 
@@ -147,9 +154,15 @@ GPU Architecture: gfx1201
 OS: Windows x64
 ```
 
-不建议在明显不同的 PyTorch / ROCm 环境中强行安装。
+即使 wheel 文件名中包含：
 
-如果版本不匹配，可能出现以下错误：
+```text
+cp312-cp312-win_amd64
+```
+
+也不代表它能够兼容所有 Python 3.12 + Windows AMD ROCm 环境。
+
+PyTorch、ROCm 或 GPU architecture 不匹配时，可能出现：
 
 ```text
 ImportError: DLL load failed
@@ -167,7 +180,57 @@ ImportError: DLL load failed
 找不到指定的模块
 ```
 
-这些错误通常与 Python / PyTorch / ROCm ABI 不兼容有关。
+因此建议优先使用与 Release 中标注环境一致或明确验证过的 wheel。
+
+---
+
+## Why Wheel Instead of Standalone `.pyd`
+
+SageAttention native backend 最终会包含类似：
+
+```text
+_qattn_gfx12_native.cp312-win_amd64.pyd
+```
+
+但本仓库不推荐直接分发单独的 `.pyd` 作为正式安装方式。
+
+Wheel 可以同时包含：
+
+```text
+sageattention/
+    __init__.py
+    core.py
+    ...
+    _qattn_gfx12_native.cp312-win_amd64.pyd
+
+sageattention-*.dist-info/
+    METADATA
+    RECORD
+    WHEEL
+```
+
+相比手动复制 `.pyd`，wheel 具有以下优势：
+
+- 可以使用 pip 正常安装
+- 可以使用 pip 正常卸载
+- 包含完整 Python package
+- 包含 package metadata
+- 更容易保证 Python 代码与 native extension 来自同一构建
+- 更适合版本管理和公开分发
+
+推荐流程：
+
+```text
+Source
+  ↓
+Build against target environment
+  ↓
+Wheel
+  ↓
+pip install
+  ↓
+Runtime verification
+```
 
 ---
 
@@ -179,9 +242,9 @@ ImportError: DLL load failed
 --use-sage-attention
 ```
 
-对于 gfx12 native backend，可根据对应节点或工作流需要设置环境变量。
+部分 gfx12 native 工作流或节点可能使用以下环境变量：
 
-CMD：
+### CMD
 
 ```bat
 set SAGEATTN_QK_DTYPE=INT8
@@ -191,7 +254,7 @@ set TORCH_BLAS_PREFER_HIPBLASLT=1
 set ROCBLAS_USE_HIPBLASLT=1
 ```
 
-PowerShell：
+### PowerShell
 
 ```powershell
 $env:SAGEATTN_QK_DTYPE = "INT8"
@@ -201,11 +264,14 @@ $env:TORCH_BLAS_PREFER_HIPBLASLT = "1"
 $env:ROCBLAS_USE_HIPBLASLT = "1"
 ```
 
+> [!NOTE]
+> 具体参数应以所使用的 SageAttention backend、ComfyUI 节点和工作流要求为准。
+
 ---
 
 ## Wheel Naming
 
-建议 wheel 文件名包含关键兼容性信息。
+为方便识别不同兼容环境，Release Asset 名称建议包含关键版本信息。
 
 例如：
 
@@ -213,67 +279,126 @@ $env:ROCBLAS_USE_HIPBLASLT = "1"
 sageattention-2.2.0+gfx1201.rocm721.torch291-cp312-cp312-win_amd64.whl
 ```
 
-推荐包含：
+详细命名和提交要求请参考：
 
-```text
-SageAttention version
-GPU architecture
-ROCm version
-PyTorch version
-Python version
-Windows architecture
-```
+[CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## Build Instructions
 
-详细的 Windows + ROCm 编译说明请参考：
+如果需要自行编译，请参考：
 
 [BUILDING.md](BUILDING.md)
 
-其中包括：
+其中包含：
 
-- ROCm SDK devel 安装
+- ROCm SDK development components
 - `rocm_sdk init`
-- `gfx1201` 编译目标
-- VS2022 x64 Native Tools
 - `hipcc`
 - `clang-cl`
+- Visual Studio 2022 x64 Native Tools
 - `PYTORCH_ROCM_ARCH`
-- ComfyUI embedded Python 缺少 `Python.h`
-- ComfyUI embedded Python 缺少 `python312.lib`
-- Wheel 构建方法
+- gfx1201 target
+- ComfyUI embedded Python development headers
+- `Python.h`
+- `python312.lib`
+- Wheel 构建流程
 - 常见错误排查
+- ABI compatibility 说明
+
+---
+
+## Community Builds
+
+欢迎提交其他 Windows ROCm 环境下编译的 SageAttention wheels。
+
+包括但不限于不同：
+
+- GPU architecture
+- GPU model
+- Python version
+- PyTorch version
+- ROCm version
+- SageAttention version
+
+例如：
+
+```text
+gfx1100
+gfx1101
+gfx1102
+gfx1200
+gfx1201
+```
+
+以及：
+
+```text
+Python 3.11
+Python 3.12
+Python 3.13
+Different PyTorch ROCm versions
+Different ROCm versions
+```
+
+详细提交要求、验证规范和 binary contribution 规则请参考：
+
+[CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## Releases
+
+预编译 wheel 建议通过 GitHub Releases 发布，而不是直接提交到 Git repository history。
+
+推荐结构：
+
+```text
+Repository
+├── README.md
+├── BUILDING.md
+├── CONTRIBUTING.md
+└── LICENSE
+
+GitHub Releases
+├── Wheel files
+├── Build information
+├── Compatibility information
+└── SHA256
+```
+
+这样可以避免大型 binary 文件长期占用 Git 历史，同时方便按不同 Python / PyTorch / ROCm / GPU architecture 分类发布。
 
 ---
 
 ## Security Notice
 
-Wheel 文件属于可执行二进制代码。
+Wheel 文件包含可执行 native code。
 
 社区提交的 wheel 不代表已经经过安全审计。
 
-安装前建议：
+安装第三方 wheel 前建议：
 
-- 确认提交者提供的构建环境
-- 核对 SHA256
-- 确认 wheel 来源
-- 避免安装来源不明的二进制文件
+- 确认 Release 来源
+- 确认构建环境
+- 确认对应 source commit
+- 核对发布页面提供的 SHA256
+- 避免安装来源不明的 binary
 
-仓库维护者不保证第三方 wheel 的安全性、稳定性或兼容性。
+仓库维护者不保证第三方 community build 的安全性、稳定性或兼容性。
 
 ---
 
 ## Upstream
 
-本仓库基于以下上游项目：
+本仓库提供以下项目的非官方 Windows ROCm binary builds：
 
 - SageAttention
 - THU-ML
 - AMD ROCm / TheRock
 
-本仓库仅提供非官方 Windows ROCm 构建与社区分发。
+本仓库不替代任何上游项目，也不提供上游项目的官方支持。
 
 ---
 
@@ -281,7 +406,7 @@ Wheel 文件属于可执行二进制代码。
 
 感谢：
 
-- THU-ML / SageAttention
+- THU-ML / SageAttention contributors
 - SageAttention gfx12 native backend contributors
 - AMD ROCm / TheRock contributors
 - Community build contributors
@@ -298,7 +423,7 @@ See:
 
 [LICENSE](LICENSE)
 
-本项目与 THU-ML、SageAttention 官方项目以及 AMD 不存在官方隶属或支持关系。
+本项目与 THU-ML、SageAttention 官方项目以及 AMD 不存在官方隶属或官方支持关系。
 
 ---
 
